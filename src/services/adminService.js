@@ -13,16 +13,8 @@ export async function verifyAdminInvitationToken(token) {
 
   const cleanToken = token.trim();
 
-  // If running in an environment with ADMIN_INVITE_TOKEN directly accessible
-  if (process.env.ADMIN_INVITE_TOKEN && process.env.ADMIN_INVITE_TOKEN.trim()) {
-    if (cleanToken !== process.env.ADMIN_INVITE_TOKEN.trim()) {
-      throw new Error('Invalid administrator invitation token. Access denied by security policy.');
-    }
-    return true;
-  }
-
   try {
-    // Attempt backend server validation via Expo Router API route
+    // Attempt backend server validation via secure API route / serverless function
     const response = await fetch('/api/validate-invite', {
       method: 'POST',
       headers: {

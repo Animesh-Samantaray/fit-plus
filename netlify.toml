@@ -1,0 +1,31 @@
+# Netlify Configuration for HB+ (Expo React Native Web)
+# Statically rendered web output targeting publish directory 'dist'
+
+[build]
+  command = "npx expo export --platform web"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Secure API route proxy to Netlify Serverless Function
+[[redirects]]
+  from = "/api/validate-invite"
+  to = "/.netlify/functions/validate-invite"
+  status = 200
+  force = true
+
+# Cache immutable assets for maximum CDN performance
+[[headers]]
+  for = "/_expo/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Enterprise Security Headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

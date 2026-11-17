@@ -18,7 +18,8 @@ It enforces strict organizational domain restrictions (`@hbplus.fit`), verified 
 7. [Environment Variables](#7-environment-variables)
 8. [Google OAuth Configuration](#8-google-oauth-configuration)
 9. [Development & Build Commands](#9-development--build-commands)
-10. [Testing & Verification](#10-testing--verification)
+10. [Netlify Production Web Deployment](#11-netlify-production-web-deployment)
+11. [Testing & Verification](#12-testing--verification)
 
 ---
 
@@ -303,7 +304,38 @@ npx eas-cli@latest build --platform android --profile production
 
 ---
 
-## 10. Testing & Verification
+## 11. Netlify Production Web Deployment
+
+### 1. Build Settings
+- **Build command:** `npx expo export --platform web`
+- **Publish directory:** `dist`
+- **Functions directory:** `netlify/functions`
+
+### 2. Environment Variables in Netlify
+Configure the following under **Site configuration &rarr; Environment variables**:
+
+| Variable | Scope | Purpose |
+| :--- | :--- | :--- |
+| `EXPO_PUBLIC_APP_NAME` | Build & Runtime | Application branding (`HB+`) |
+| `EXPO_PUBLIC_APP_ENV` | Build & Runtime | Environment identifier (`production`) |
+| `EXPO_PUBLIC_ALLOWED_EMAIL_DOMAIN` | Build & Runtime | Allowed corporate domain (`hbplus.fit`) |
+| `EXPO_PUBLIC_FIREBASE_API_KEY` | Build & Runtime | Firebase Web API Key |
+| `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN` | Build & Runtime | Firebase Auth Domain (`<project>.firebaseapp.com`) |
+| `EXPO_PUBLIC_FIREBASE_PROJECT_ID` | Build & Runtime | Firebase Project ID |
+| `EXPO_PUBLIC_FIREBASE_APP_ID` | Build & Runtime | Firebase Web App ID |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Build & Runtime | Google OAuth Web Client ID |
+| `ADMIN_INVITE_TOKEN` | Functions / Server | Secret token used by Netlify Function (`validate-invite`) |
+
+> **Security Guard:** Never prefix `ADMIN_INVITE_TOKEN` with `EXPO_PUBLIC_`. It is strictly accessed on the server by the Netlify serverless function.
+
+### 3. Firebase & Google Cloud Authorization
+Once your Netlify site is assigned a URL (e.g. `https://hbplus-app.netlify.app` or custom domain `https://hbplus.fit`):
+1. **Firebase Console:** Go to **Authentication &rarr; Settings &rarr; Authorized domains** and add your Netlify domain.
+2. **Google Cloud Console:** Under **Credentials &rarr; OAuth 2.0 Client IDs &rarr; Web client**, add your Netlify domain under **Authorized JavaScript origins**.
+
+---
+
+## 12. Testing & Verification
 
 Run the automated domain validation and verification test suite:
 ```bash
