@@ -1,4 +1,4 @@
-# HB+ — Enterprise Cross-Platform Mobile & Web Identity Platform (url:- hbfitplus.netlify.app/)
+# HB+ — Enterprise Cross-Platform Mobile & Web Identity Platform (url:- [hbfitplus.netlify.app/](url))
 
 HB+ is a cross-platform enterprise mobile and web identity application engineered using React Native, Expo (SDK 58), React Native Web, Firebase Authentication, Cloud Firestore, and NativeWind (Tailwind CSS).
 
