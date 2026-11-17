@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: Check if caller is accessing their own document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper: Check if authenticated caller holds an admin role in Firestore
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /users/{userId} {
+      // Users can always read their own profile; admins can inspect profiles
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Profile creation:
+      // - Caller must be owner
+      // - Strict schema enforcement: exact 5 fields only
+      // - Role must be valid ('user' or 'admin')
+      allow create: if isOwner(userId)
+                    && request.resource.data.keys().hasOnly(['name', 'email', 'photoURL', 'role', 'createdAt'])
+                    && request.resource.data.role in ['user', 'admin'];
+
+      // Profile update:
+      // - Users can never elevate their own role
+      // - createdAt timestamp is immutable
+      allow update: if isOwner(userId)
+                    && request.resource.data.role == resource.data.role
+                    && request.resource.data.createdAt == resource.data.createdAt;
+
+      // Prohibit client-side profile deletion
+      allow delete: if false;
+    }
+  }
+}
