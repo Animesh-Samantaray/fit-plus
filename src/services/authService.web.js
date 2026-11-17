@@ -51,6 +51,10 @@ export async function authenticateWithGoogle() {
       throw new Error(
         'This domain is not authorized in Firebase Authentication. Please add it to Authorized Domains in the Firebase Console.'
       );
+    } else if (error.code === 'auth/account-exists-with-different-credential') {
+      throw new Error(
+        'An account with this email already exists in Firebase Authentication with different sign-in credentials. Please sign in using that method, or clear the conflicting user in Firebase Console.'
+      );
     }
     throw error;
   }
@@ -93,25 +97,21 @@ export async function authenticateWithGoogle() {
 export async function signInExistingUser() {
   const user = await authenticateWithGoogle();
 
-  // Fetch existing profile from Firestore
-  const profile = await getUserProfile(user.uid);
+  // Fetch existing profile from Firestore, or auto-provision if missing
+  let profile = await getUserProfile(user.uid);
 
   if (!profile) {
-    // Authentication succeeded but profile does not exist in Firestore
     try {
-      await firebaseSignOut(auth);
-    } catch {}
-    const err = new Error(
-      'No registered HB+ account found for this email. Please switch to "Sign Up" to register first.'
-    );
-    err.code = 'PROFILE_NOT_FOUND';
-    throw err;
+      profile = await createUserProfile(user, 'user');
+    } catch (e) {
+      console.warn('Profile auto-creation on sign in notice:', e.message);
+    }
   }
 
   return {
     user,
     profile,
-    role: profile.role || 'user',
+    role: profile?.role || 'user',
   };
 }
 

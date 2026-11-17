@@ -71,15 +71,22 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        // Check if Firestore profile exists
-        const userDoc = await getUserProfile(firebaseUser.uid);
+        // Check if Firestore profile exists, or auto-provision if missing
+        let userDoc = await getUserProfile(firebaseUser.uid);
+        if (!userDoc) {
+          try {
+            userDoc = await createUserProfile(firebaseUser, 'user');
+          } catch (e) {
+            console.warn('Auto-provisioning profile notice:', e.message);
+          }
+        }
+
         if (userDoc) {
           setUser(firebaseUser);
           setProfile(userDoc);
           setRole(userDoc.role || 'user');
           setAuthError(null);
         } else {
-          // User authenticated with Google but hasn't created a Firestore profile yet
           setUser(firebaseUser);
           setProfile(null);
           setRole(null);

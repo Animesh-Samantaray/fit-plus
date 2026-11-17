@@ -51,10 +51,10 @@ export async function createUserProfile(firebaseUser, role = 'user') {
   const uid = firebaseUser.uid;
   const userRef = doc(db, 'users', uid);
 
-  // Check if user document already exists to prevent duplicate creation or overwrites
-  const existingDoc = await getDoc(userRef);
-  if (existingDoc.exists()) {
-    return existingDoc.data();
+  // Check if user profile already exists safely without tripping read permission errors
+  const existingProfile = await getUserProfile(uid);
+  if (existingProfile) {
+    return existingProfile;
   }
 
   const normalizedRole = role === 'admin' ? 'admin' : 'user';
